@@ -1,21 +1,22 @@
-# took out conf:1; 
-from scapy.all import srp, Ether, ARP#, conf
+from scapy.all import srp, Ether, ARP, conf, arping
 from time import sleep
 from datetime import datetime
 from json import dump
 from requests import get
 
+from Target import Target
 from utils import make_subnets
 from cfg import ARP_DELAY, ARP_JSON, ARP_CSV, IFACE
 
-class Host:
-    def __init__(self, ipv4, subnet, mac, manu=''):
-
-        self.ts = str(datetime.now())
-        self.ipv4 = ipv4
-        self.subnet = subnet
-        self.mac = mac
-        self.manu = manu
+def make_target(ip):
+    ans, unans = arping(ip)
+    conf.verb = 0
+    for snd,rcv in ans:
+        ipv4 = ip
+        mac = rcv[Ether].src
+        manu = find_vendor(mac)
+        #print(ipv4, mac, manu)
+        return Target(ipv4, mac, manu)
 
 def arp_scan():
     subnets = make_subnets()
@@ -23,22 +24,22 @@ def arp_scan():
     for net in subnets:
         if '\n' in net:
             net = net.strip('\n')
-        #conf.verb = 0
+        conf.verb = 0
         ans, unans = srp(Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst=net),timeout=2, iface=IFACE, inter=0.1)
-        hosts = []
+        targets = []
 
         for snd,rcv in ans:
             ipv4 = rcv.sprintf(r'%ARP.psrc%')
             mac = rcv.sprintf(r'%Ether.src%')
             manu = find_vendor(mac)
 
-            H = Host(ipv4, net, mac, manu)
-            print(H.ts, H.ipv4, sep, H.mac, sep, H.manu)
+            T = Target(ipv4, mac, manu)
+            print(T.ts, T.ipv4, sep, T.mac, sep, T.manu)
             
-            hosts.append(H)
-    #print(hosts)
+            targets.append(T)
+    #print(targets)
     print('#######')
-    return hosts
+    return targets
 
 def find_vendor(mac):
     #source: https://macvendors.co/api/python
@@ -46,40 +47,36 @@ def find_vendor(mac):
     manu_data = req.json()
     return manu_data
 
-def write_arp_csv(host_arr, fname):
+def write_arp_csv(target_arr, fname):
 
-    for H in host_arr:
-        text = str(H.subnet) + ',' + str(H.ip) + ',' + str(H.mac) + ',' + str(H.ts) + '\n'
+    for T in target_arr:
+        text =  str(T.ip) + ',' + str(T.mac) + ',' + str(T.ts) + '\n'
         with open(fname, 'a+') as f:
             f.write(text)
 
     return
 
-def write_arp_json(host_arr, fname):
-    json_name = 'hosts_' + host_arr[0].subnet
+def write_arp_json(target_arr, fname):
+    json_name = 'targets_' + target_arr[0].subnet
     data = {}
     data[json_name] = []
 
-    for H in host_arr:
-        print(H.ts, H.ipv4, H.mac, H.manu)
-        data[json_name].append({'ts':H.ts, 'ipv4':H.ipv4, 'mac':H.mac, 'manu':H.manu})
+    for T in target_arr:
+        print(T.ts, T.ipv4, T.mac, T.manu)
+        data[json_name].append({'ts':T.ts, 'ipv4':T.ipv4, 'mac':T.mac, 'manu':T.manu})
 
     with open(fname, 'a+') as f:
         dump(data,f)
 
     return
 
-def continuous_arp():
-
+#find_vendor('14:18:77:17:12:ba')
+if __name__ == '__main__':
     while True:
-        #try:
         print('init arp scan')
         write_arp_json(arp_scan(), ARP_JSON)
         #write_arp_csv(arp_scan(), ARP_CSV
-        #blink_led(purple)
         sleep(ARP_DELAY)
 
 
-#find_vendor('14:18:77:17:12:ba')
-if __name__ == '__main__':
-    continuous_arp()
+
