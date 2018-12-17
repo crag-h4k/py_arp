@@ -3,6 +3,7 @@ from time import sleep
 from datetime import datetime
 from json import dump
 from requests import get
+from pprint import pprint
 
 from Target import Target
 from utils import make_subnets
@@ -15,7 +16,6 @@ def make_target(ip):
         ipv4 = ip
         mac = rcv[Ether].src
         manu = find_vendor(mac)
-        #print(ipv4, mac, manu)
         return Target(ipv4, mac, manu)
 
 def arp_scan():
@@ -34,11 +34,8 @@ def arp_scan():
             manu = find_vendor(mac)
 
             T = Target(ipv4, mac, manu)
-            print(T.ts, T.ipv4, sep, T.mac, sep, T.manu)
-            
             targets.append(T)
-    #print(targets)
-    print('#######')
+
     return targets
 
 def find_vendor(mac):
@@ -57,26 +54,26 @@ def write_arp_csv(target_arr, fname):
     return
 
 def write_arp_json(target_arr, fname):
-    json_name = 'targets_' + target_arr[0].subnet
+    json_name = 'targets_' + target_arr[0].ipv4
     data = {}
     data[json_name] = []
 
     for T in target_arr:
-        print(T.ts, T.ipv4, T.mac, T.manu)
-        data[json_name].append({'ts':T.ts, 'ipv4':T.ipv4, 'mac':T.mac, 'manu':T.manu})
+        target_info = {'ts':str(T.ts), 'ipv4':T.ipv4, 'mac':T.mac, 'manu':T.manu}
+        pprint(target_info)
+        data[json_name].append(target_info)
 
     with open(fname, 'a+') as f:
         dump(data,f)
 
     return
 
-#find_vendor('14:18:77:17:12:ba')
 if __name__ == '__main__':
-    while True:
-        print('init arp scan')
-        write_arp_json(arp_scan(), ARP_JSON)
-        #write_arp_csv(arp_scan(), ARP_CSV
-        sleep(ARP_DELAY)
+    #while True:
+    print('init arp scan')
+    write_arp_json(arp_scan(), ARP_JSON)
+    #write_arp_csv(arp_scan(), ARP_CSV
+        #sleep(ARP_DELAY)
 
 
 
