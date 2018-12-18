@@ -6,8 +6,11 @@ from requests import get
 from pprint import pprint
 
 from Target import Target
-from utils import make_subnets
+from utils import make_subnets, target_to_json
 from cfg import ARP_DELAY, ARP_JSON, ARP_CSV, IFACE
+from auth import hook_url
+from send_slack import send_msg
+
 
 def make_target(ip):
     ans, unans = arping(ip)
@@ -20,7 +23,6 @@ def make_target(ip):
 
 def arp_scan():
     subnets = make_subnets()
-    sep = '    '
     for net in subnets:
         if '\n' in net:
             net = net.strip('\n')
@@ -34,6 +36,7 @@ def arp_scan():
             manu = find_vendor(mac)
 
             T = Target(ipv4, mac, manu)
+            send_msg(target_to_json(T), hook_url)
             targets.append(T)
 
     return targets
@@ -59,7 +62,7 @@ def write_arp_json(target_arr, fname):
     data[json_name] = []
 
     for T in target_arr:
-        target_info = {'ts':str(T.ts), 'ipv4':T.ipv4, 'mac':T.mac, 'manu':T.manu}
+        target_info = target_to_json(T)
         pprint(target_info)
         data[json_name].append(target_info)
 

@@ -18,3 +18,7 @@ def get_gateway():
     cmd = 'ip route|cut -d " " -f 3'
     gateway = check_output(cmd, shell=True).decode('utf-8')
     return gateway.split('\n')[0]
+
+def target_to_json(T):
+    return {'ts':str(T.ts), 'ipv4':T.ipv4, 'mac':T.mac, 'manu':T.manu}
+

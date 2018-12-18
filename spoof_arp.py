@@ -1,8 +1,8 @@
 from time import sleep
 from sys import argv
-from subprocess import call
 
 from scapy.all import *
+#from scapy.all import send, ARP
 
 from Target import Target
 from scan_arp import make_target
@@ -41,7 +41,7 @@ def spoof_all(victim_list, full_poison = False):
     return
 
 if __name__ == '__main__':
-   
+    #pass in the ip_address of the target you wish to poison 
     Victim = make_target(argv[1])
     while 1:
         partial_poison(Victim) 
