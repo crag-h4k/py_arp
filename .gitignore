@@ -1,3 +1,1 @@
-./scans/*
-./__pycache__/*
-./auth.py
+py_arp/__pycache__

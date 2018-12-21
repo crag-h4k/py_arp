@@ -1,8 +1,7 @@
 from time import sleep
 from sys import argv
 
-from scapy.all import *
-#from scapy.all import send, ARP
+from scapy.all import send, ARP
 
 from Target import Target
 from scan_arp import make_target
@@ -46,7 +45,7 @@ if __name__ == '__main__':
     while 1:
         partial_poison(Victim) 
 
-    '''
+'''
     Gateway = make_target(get_gateway())
     try:
         while 1:

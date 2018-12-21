@@ -1,2 +1,4 @@
 colorama
 scapy
+requests
+pprint
