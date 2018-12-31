@@ -26,12 +26,13 @@ def arp_scan(net_iface):
     for net in subnets:
         if '\n' in net:
             net = net.strip('\n')
+
         conf.verb = 0
         ans, unans = srp(Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst=net),timeout=2, iface=net_iface, inter=0.1)
         targets = []
 
         for snd,rcv in ans:
-            ipv4 = r cv.sprintf(r'%ARP.psrc%')
+            ipv4 = rcv.sprintf(r'%ARP.psrc%')
             mac = rcv.sprintf(r'%Ether.src%')
             manu = find_vendor(mac)
 

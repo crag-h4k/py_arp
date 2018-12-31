@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
 Name: py-arp
-Version: 0.0.0
+Version: 0.0.1
 Summary: Quick and dirty arp scan, save results to a file
-Home-page: https://github.com/deadlift1226/
+Home-page: https://github.com/deadlift1226/py_arp
 Author: Dane Morgan
 Author-email: danemorgan91@gmail.com
 License: UNKNOWN

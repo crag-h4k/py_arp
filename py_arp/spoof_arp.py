@@ -30,14 +30,15 @@ def restore(Victim, Gateway):
 def spoof_all(victim_list, full_poison = False):
     if full_poison == True:
         Gateway = make_target(get_gateway())
-        while 1:
-            for Victim in victim_list:
-                full_poison(Victim, Gateway)
-    else:
-        for Victim in victim_list:
-            partial_poison(poison)
+        while 1: [full_poison(Victim, Gateway)for Victim in victim_list]
+    else: [partial_poison(poison) for Victim in victim_list]
+            
 
     return
+
+def rely_tcp():
+    return
+
 
 if __name__ == '__main__':
     #pass in the ip_address of the target you wish to poison 
